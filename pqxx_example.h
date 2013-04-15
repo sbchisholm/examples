@@ -6,6 +6,13 @@
 #include <vector>
 #include <string>
 #include <boost/foreach.hpp>
+#include <boost/format.hpp>
+
+namespace query {
+  static const std::string readTableRowsQuery("SELECT col1 FROM table1");
+  static const std::string insertTableRowsQuery("INSERT INTO table1(col1) VALUES('%1%')");
+  static const std::string truncateTableQuery("TRUNCATE table1");
+}
 
 class ReadTableRows : public pqxx::transactor<>
 {
@@ -20,7 +27,7 @@ class ReadTableRows : public pqxx::transactor<>
 
     void operator() (argument_type& T)
     {
-      pqxx::result result = T.exec("SELECT col1 FROM table1");
+      pqxx::result result = T.exec(query::readTableRowsQuery);
       BOOST_FOREACH(pqxx::result::const_iterator row, result)
       {
         std::string s;
@@ -36,6 +43,52 @@ class ReadTableRows : public pqxx::transactor<>
 
   private:
     std::vector<std::string>& m_result;
+};
+
+class InsertTableRows : public pqxx::transactor<>
+{
+  private:
+    typedef pqxx::transactor<> Base;
+    static const std::vector<std::string> values;
+  public:
+    InsertTableRows(std::string name="InsertTableRows")
+      : Base(name)
+    {}
+    
+    void operator() (argument_type& T)
+    {
+      BOOST_FOREACH(const std::string& value, values) {
+        pqxx::result result = T.exec(
+            boost::str(boost::format(query::insertTableRowsQuery) % value));
+      }
+    }
+
+    void OnCommit()
+    { std::cout << "Success!" << std::endl; }
+
+    void OnAbort(const char Reason[]) throw ()
+    { std::cout << "Aborted: " << Reason << std::endl; }
+};
+
+class TruncateTable : public pqxx::transactor<>
+{
+  private:
+    typedef pqxx::transactor<> Base;
+  public:
+    TruncateTable(std::string name="TruncateTable")
+      : Base(name)
+    {}
+    
+    void operator() (argument_type& T)
+    {
+      pqxx::result result = T.exec(query::truncateTableQuery);
+    }
+
+    void OnCommit()
+    { std::cout << "Success!" << std::endl; }
+
+    void OnAbort(const char Reason[]) throw ()
+    { std::cout << "Aborted: " << Reason << std::endl; }
 };
 
 #endif // __pqxx_example_h_included__
