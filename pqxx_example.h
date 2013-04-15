@@ -7,16 +7,18 @@
 #include <string>
 #include <boost/foreach.hpp>
 
-class ReadTableRows : pqxx::transactor<>
+class ReadTableRows : public pqxx::transactor<>
 {
+  private:
+    typedef pqxx::transactor<> Base;
   public:
     ReadTableRows(std::vector<std::string>& result, 
                   std::string name="ReadTableRows")
-      : transactor<>(name)
+      : Base(name)
       , m_result(result)
     {}
 
-    void operator() (TRANSACTION& T)
+    void operator() (argument_type& T)
     {
       pqxx::result result = T.exec("SELECT col1 FROM table1");
       BOOST_FOREACH(pqxx::result::const_iterator row, result)
