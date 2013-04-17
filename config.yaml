@@ -1,3 +1,4 @@
 
+# String passed to the postgres object to create a connection to the databse
 DatabaseConnectionString: "host=localhost dbname=mydb user=postgres password=postgres"
 
