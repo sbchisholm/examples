@@ -30,8 +30,9 @@ class ReadTableRows : public pqxx::transactor<>
       pqxx::result result = T.exec(query::readTableRowsQuery);
       BOOST_FOREACH(pqxx::result::const_iterator row, result)
       {
-        std::string s;
-        if(row["col1"].to(s)) m_result.push_back(s);
+        // add column1 data to the result vector, if the value is null use an
+        // empty string as the default value.
+        m_result.push_back(row["col1"].as<std::string>(""));
       }
     }
 

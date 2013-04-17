@@ -8,7 +8,6 @@ const std::vector<std::string> InsertTableRows::values =
 
 int main(int argc, char* argv[])
 {
-
   std::string connectionStr(argv[1]);
 
   pqxx::connection conn(connectionStr);
